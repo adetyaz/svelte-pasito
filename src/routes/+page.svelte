@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { Stepper, useAutoPlay } from '$lib';
-	import { photos, type Photo } from './photos';
+	import { Stepper, useAutoPlay } from '../lib/index.ts';
+	import { photos, type Photo } from './photos.ts';
 
 	type Theme = 'default' | 'minimal' | 'hacker' | 'warm' | 'brutalist';
 	const themes: { id: Theme; label: string }[] = [
@@ -72,6 +72,8 @@
 	}
 
 	const unsplashUrl = 'https://unsplash.com/?utm_source=svelte-pasito&utm_medium=referral';
+	// a literal closing script tag here would end this component's <script> block
+	const closeScript = '</' + 'script>';
 	const installCode = 'npm i svelte-pasito';
 	const agentPrompt =
 		'Install svelte-pasito (npm i svelte-pasito). Import the Stepper component, then add a stepper to my Svelte file with 5 steps and click-to-navigate.';
@@ -80,7 +82,7 @@
   import { Stepper } from 'svelte-pasito'
 
   let active = $state(0)
-<\/script>
+${closeScript}
 
 <Stepper
   count={5}
@@ -100,7 +102,7 @@
     stepDuration: () => 5000,
     loop: () => true
   })
-<\/script>
+${closeScript}
 
 <Stepper
   count={5}
@@ -215,6 +217,7 @@
 {#snippet credit(p: Photo | undefined)}
 	{#if p}
 		<p class="credit faint mt-3 text-center text-xs">
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- external Unsplash profile URL -->
 			Photo by <a class="link underline" href={p.authorUrl} target="_blank" rel="noopener noreferrer"
 				>{p.author}</a
 			>
@@ -345,6 +348,7 @@
 	<nav class="fixed top-16 left-8 hidden xl:block" aria-label="Sections">
 		<div class="faint space-y-2 text-sm">
 			{#each navLinks as [href, label] (href)}
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- in-page #section anchors -->
 				<a {href} class="link block">{label}</a>
 			{/each}
 		</div>
