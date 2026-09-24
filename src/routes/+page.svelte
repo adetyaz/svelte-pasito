@@ -15,6 +15,58 @@
 	const themeClass = $derived(theme === 'default' ? '' : `theme-${theme}`);
 	const set = $derived(photos[theme]);
 
+	const themeCss: Record<Exclude<Theme, 'default'>, string> = {
+		minimal: `.theme-minimal {
+  --pill-container-bg: transparent;
+  --pill-container-border: transparent;
+}`,
+		hacker: `.theme-hacker {
+  --pill-active-bg: #00ff41;
+  --pill-bg: rgba(0, 255, 65, 0.25);
+  --pill-fill-bg: rgba(0, 255, 65, 0.3);
+  --pill-container-bg: rgba(0, 0, 0, 0.55);
+  --pill-container-border: rgba(0, 255, 65, 0.3);
+  --pill-container-radius: 0px;
+  --pill-dot-size: 5px;
+  --pill-active-width: 16px;
+  --pill-gap: 4px;
+}
+.theme-hacker .pasito-step {
+  border-radius: 0;
+}`,
+		warm: `.theme-warm {
+  --pill-active-bg: #faf5f0;
+  --pill-bg: rgba(250, 245, 240, 0.35);
+  --pill-fill-bg: rgba(250, 245, 240, 0.4);
+  --pill-container-bg: #c2785c;
+  --pill-container-border: #b06a4e;
+}`,
+		brutalist: `.theme-brutalist {
+  --pill-dot-size: 8px;
+  --pill-active-width: 28px;
+  --pill-gap: 6px;
+  --pill-bg: #000;
+  --pill-active-bg: #000;
+  --pill-fill-bg: #ff3b00;
+  --pill-container-bg: #ffe600;
+  --pill-container-border: #000;
+  --pill-container-radius: 0px;
+}
+.pasito-container.theme-brutalist {
+  border-width: 2px;
+  box-shadow: 3px 3px 0 #000;
+}
+.theme-brutalist .pasito-step {
+  border-radius: 0;
+}`
+	};
+	const themeLabel = $derived(themes.find((t) => t.id === theme)?.label ?? '');
+	const themeUsage = $derived(
+		`<Stepper count={5} {active} onStepClick={(i) => (active = i)}${
+			theme === 'default' ? '' : ` className="theme-${theme}"`
+		} />`
+	);
+
 	// Hero carousel
 	let heroCount = $state(3);
 	let heroActive = $state(0);
@@ -531,6 +583,27 @@ ${closeScript}
 			<div class="mt-8 xl:hidden">
 				{@render themePicker('grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5', 'h-24')}
 			</div>
+
+			<h3 class="mt-10 font-medium">Using {themeLabel}</h3>
+			{#if theme === 'default'}
+				<p class="muted mt-4">
+					Default is the built-in look — no CSS or class needed. Pick another theme to see how it's
+					applied.
+				</p>
+				{@render codeBlock(themeUsage)}
+			{:else}
+				<p class="muted mt-4">
+					1. Add this CSS to a global stylesheet (e.g. <code
+						class="chip rounded px-1.5 py-0.5 text-sm">src/app.css</code
+					>). If you put it in a component's <code class="chip rounded px-1.5 py-0.5 text-sm"
+						>&lt;style&gt;</code
+					>, wrap the selectors in <code class="chip rounded px-1.5 py-0.5 text-sm">:global()</code>
+					so they reach the stepper.
+				</p>
+				{@render codeBlock(themeCss[theme])}
+				<p class="muted mt-6">2. Pass the class to the stepper:</p>
+				{@render codeBlock(themeUsage)}
+			{/if}
 		</section>
 
 		<section id="installation" class="mt-20 scroll-mt-8 sm:mt-24">
