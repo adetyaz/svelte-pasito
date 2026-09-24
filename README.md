@@ -2,6 +2,8 @@
 
 A tiny, themeable, dependency-free fluid stepper component for Svelte 5.
 
+**[Live demo →](https://svelte-pasito.vercel.app)**
+
 This is a Svelte port of [pasito](https://github.com/joshpuckett/pasito) by
 [@joshpuckett](https://github.com/joshpuckett), which originally ships React and Vue
 implementations. All credit for the design, API, and CSS goes to the original project —

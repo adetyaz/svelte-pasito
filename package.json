@@ -8,7 +8,7 @@
 		"type": "git",
 		"url": "git+https://github.com/adetyaz/svelte-pasito.git"
 	},
-	"homepage": "https://github.com/adetyaz/svelte-pasito#readme",
+	"homepage": "https://svelte-pasito.vercel.app",
 	"bugs": {
 		"url": "https://github.com/adetyaz/svelte-pasito/issues"
 	},
