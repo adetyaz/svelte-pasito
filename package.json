@@ -1,6 +1,6 @@
 {
 	"name": "svelte-pasito",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"description": "A tiny, themeable, dependency-free fluid stepper for Svelte 5 — port of pasito",
 	"author": "Adetayo Lasisi",
 	"license": "MIT",
