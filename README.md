@@ -56,12 +56,17 @@ current value at the moment it fires, not a snapshot from when it was constructe
 	onStepClick={(index) => (active = index)}
 	filling={autoplay.filling}
 	fillDuration={autoplay.fillDuration}
+	onfocusin={autoplay.handleFocusIn}
+	onfocusout={autoplay.handleFocusOut}
 />
 
 <button onclick={autoplay.toggle}>
 	{autoplay.playing ? 'Pause' : 'Play'}
 </button>
 ```
+
+`onfocusin`/`onfocusout` are optional: with them, playback pauses while keyboard focus is
+inside the stepper and resumes when it leaves (only if it was playing before).
 
 If you'd rather manage the instance yourself, `AutoPlayController` is exported directly
 too — `useAutoPlay(options)` is just `new AutoPlayController(options)`.
@@ -80,6 +85,8 @@ too — `useAutoPlay(options)` is just `new AutoPlayController(options)`.
 | `className`           | `string`                    | —              | Extra class for the container               |
 | `filling`             | `boolean`                   | —              | Whether the active step is filling          |
 | `fillDuration`        | `number`                    | —              | Fill animation duration, in ms              |
+| `onfocusin`           | `(event: FocusEvent) => void` | —            | Focus entered the stepper (pass `autoplay.handleFocusIn`) |
+| `onfocusout`          | `(event: FocusEvent) => void` | —            | Focus left a step (pass `autoplay.handleFocusOut`) |
 
 ## Theming
 
@@ -104,6 +111,19 @@ Override appearance with CSS custom properties on `.pasito-container` (or pass a
 
 Steps render as `role="tab"` buttons with `aria-selected`, a roving `tabindex`, and
 descriptive `aria-label`s, and all transitions respect `prefers-reduced-motion`.
+
+Keyboard (when `onStepClick` is passed):
+
+| Key             | Action                                          |
+| --------------- | ----------------------------------------------- |
+| `←` `→`         | Previous / next step (horizontal; wraps around) |
+| `↑` `↓`         | Previous / next step (vertical; wraps around)   |
+| `Home` / `End`  | First / last step                               |
+| `Enter` / `Space` | Select the focused step                       |
+| `Tab`           | Into and out of the stepper (lands on the active step) |
+
+With autoplay, wire `onfocusin`/`onfocusout` (see above) so playback pauses while focus is
+inside the stepper. A play/pause `<button>` toggles with `Space` like any button.
 
 ## Developing
 

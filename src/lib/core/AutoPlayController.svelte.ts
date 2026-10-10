@@ -50,8 +50,28 @@ export class AutoPlayController {
 		});
 	}
 
+	private pausedByFocus = false;
+
 	toggle = (): void => {
+		this.pausedByFocus = false;
 		this.playing = !this.playing;
+	};
+
+	handleFocusIn = (): void => {
+		if (!this.playing) return;
+		this.playing = false;
+		this.pausedByFocus = true;
+	};
+
+	handleFocusOut = (event?: FocusEvent): void => {
+		// focus moving between steps inside the same stepper is not "leaving"
+		const container = event?.currentTarget;
+		const next = event?.relatedTarget;
+		if (container instanceof Node && next instanceof Node && container.contains(next)) return;
+
+		if (!this.pausedByFocus) return;
+		this.pausedByFocus = false;
+		this.playing = true;
 	};
 
 	computeNext(active: number, count: number): number | null {

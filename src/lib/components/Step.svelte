@@ -26,4 +26,5 @@
 	aria-selected={isActive}
 	aria-label={`Step ${index + 1}`}
 	tabindex={isActive ? 0 : -1}
+	data-step-index={phase === 'exiting' ? undefined : index}
 ></button>

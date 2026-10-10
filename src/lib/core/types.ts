@@ -19,6 +19,10 @@ export interface StepperProps {
 	filling?: boolean;
 	/** Duration of the fill animation in ms */
 	fillDuration?: number;
+	/** Fires when focus enters the stepper; pass `autoplay.handleFocusIn` to pause autoplay */
+	onfocusin?: (event: FocusEvent) => void;
+	/** Fires when focus leaves a step; pass `autoplay.handleFocusOut` to resume autoplay */
+	onfocusout?: (event: FocusEvent) => void;
 }
 
 export interface StepProps {

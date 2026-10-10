@@ -2,6 +2,21 @@
 	import { fade } from 'svelte/transition';
 	import { Stepper, useAutoPlay } from '../lib/index.ts';
 	import { photos, type Photo } from './photos.ts';
+	import changelogMd from '../../CHANGELOG.md?raw';
+
+	type Release = { version: string; date: string; groups: { title: string; items: string[] }[] };
+
+	// parses only what CHANGELOG.md uses: "## [x.y.z] - date", "### Group", "- item"
+	const releases: Release[] = [];
+	for (const line of changelogMd.split(/\r?\n/)) {
+		const release = line.match(/^## \[(.+?)\](?: - (.+))?/);
+		const group = line.match(/^### (.+)/);
+		const item = line.match(/^- (.+)/);
+		const current = releases.at(-1);
+		if (release) releases.push({ version: release[1], date: release[2] ?? '', groups: [] });
+		else if (group && current) current.groups.push({ title: group[1], items: [] });
+		else if (item && current?.groups.length) current.groups.at(-1)!.items.push(item[1]);
+	}
 
 	type Theme = 'default' | 'minimal' | 'hacker' | 'warm' | 'brutalist';
 	const themes: { id: Theme; label: string }[] = [
@@ -162,6 +177,8 @@ ${closeScript}
   onStepClick={(i) => (active = i)}
   filling={autoplay.filling}
   fillDuration={autoplay.fillDuration}
+  onfocusin={autoplay.handleFocusIn}
+  onfocusout={autoplay.handleFocusOut}
 />`;
 
 	const darkThemeCode = `.my-dark-stepper {
@@ -182,7 +199,9 @@ ${closeScript}
 		['easing', 'string', 'CSS timing function. Default: cubic-bezier(0.215, 0.61, 0.355, 1)'],
 		['filling', 'boolean', 'Show fill progress on the active step'],
 		['fillDuration', 'number', 'Fill animation duration in ms. Default: 3000'],
-		['className', 'string', 'Extra class on the container, for variable overrides']
+		['className', 'string', 'Extra class on the container, for variable overrides'],
+		['onfocusin', '(event: FocusEvent) => void', 'Focus entered the stepper. Pass autoplay.handleFocusIn'],
+		['onfocusout', '(event: FocusEvent) => void', 'Focus left a step. Pass autoplay.handleFocusOut']
 	];
 
 	const autoPlayOptions: [string, string, string][] = [
@@ -198,7 +217,17 @@ ${closeScript}
 		['playing', 'boolean', 'Current playback state (reactive)'],
 		['toggle', '() => void', 'Toggle play/pause'],
 		['filling', 'boolean', 'Pass to Stepper filling prop'],
-		['fillDuration', 'number', 'Pass to Stepper fillDuration prop']
+		['fillDuration', 'number', 'Pass to Stepper fillDuration prop'],
+		['handleFocusIn', '() => void', 'Pass to Stepper onfocusin: pauses while focused'],
+		['handleFocusOut', '(event?: FocusEvent) => void', 'Pass to Stepper onfocusout: resumes if it paused']
+	];
+
+	const keyboardRows: [string, string, string][] = [
+		['← →', 'Horizontal', 'Previous / next step (wraps around)'],
+		['↑ ↓', 'Vertical', 'Previous / next step (wraps around)'],
+		['Home / End', 'Both', 'First / last step'],
+		['Enter / Space', 'Both', 'Select the focused step'],
+		['Tab', 'Both', 'Move into and out of the stepper (lands on the active step)']
 	];
 
 	const themeVars: [string, string, string][] = [
@@ -220,7 +249,8 @@ ${closeScript}
 		['#installation', 'Installation'],
 		['#usage', 'Usage'],
 		['#api-reference', 'API Reference'],
-		['#theming', 'Theming']
+		['#theming', 'Theming'],
+		['#changelog', 'Changelog']
 	];
 
 	const glassBtn = 'ctl flex h-8 w-8 shrink-0 items-center justify-center';
@@ -551,6 +581,8 @@ ${closeScript}
 						onStepClick={(i) => (autoplayActive = i)}
 						filling={autoplay.filling}
 						fillDuration={autoplay.fillDuration}
+						onfocusin={autoplay.handleFocusIn}
+						onfocusout={autoplay.handleFocusOut}
 						className="autoplay-stepper {themeClass}"
 					/>
 					<button
@@ -664,6 +696,46 @@ ${closeScript}
 				step is keyboard-focusable, and all transitions resolve instantly under
 				<code class="chip rounded-full px-2 py-0.5 text-xs">prefers-reduced-motion</code>.
 			</p>
+
+			<h3 class="mt-10 font-medium">Keyboard</h3>
+			<p class="muted mt-4">
+				Arrow keys work whenever <code class="chip rounded px-1.5 py-0.5 text-sm">onStepClick</code> is
+				passed.
+			</p>
+			{@render table(['Key', 'Orientation', 'Action'], keyboardRows)}
+
+			<h3 class="mt-10 font-medium">Autoplay</h3>
+			<p class="muted mt-4">
+				Wire <code class="chip rounded px-1.5 py-0.5 text-sm">onfocusin</code> and
+				<code class="chip rounded px-1.5 py-0.5 text-sm">onfocusout</code> to the autoplay handlers (see
+				Autoplay Usage) and playback pauses while focus is inside the stepper, then resumes when it
+				leaves — but only if it was playing before. Your play/pause button is a normal button, so
+				<kbd>Space</kbd> toggles it.
+			</p>
+		</section>
+
+		<section id="changelog" class="mt-16 scroll-mt-8">
+			<h2 class="text-xl font-medium">Changelog</h2>
+			{#each releases as r (r.version)}
+				<div class="rule-soft mt-8 border-t pt-6">
+					<h3 class="flex items-baseline justify-between gap-4 font-medium">
+						<span>{r.version}</span>
+						{#if r.date}<span class="faint text-sm font-normal">{r.date}</span>{/if}
+					</h3>
+					{#each r.groups as g (g.title)}
+						<p class="faint mt-4 text-xs tracking-wide uppercase">{g.title}</p>
+						<ul class="muted mt-2 list-disc space-y-1.5 pl-5 text-sm">
+							{#each g.items as text, i (i)}
+								<li>
+									{#each text.split('`') as part, j (j)}{#if j % 2}<code
+												class="chip rounded px-1 py-0.5 text-xs">{part}</code
+											>{:else}{part}{/if}{/each}
+								</li>
+							{/each}
+						</ul>
+					{/each}
+				</div>
+			{/each}
 		</section>
 
 		<footer class="faint mt-24 text-sm">
